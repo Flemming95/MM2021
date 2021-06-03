@@ -3,7 +3,8 @@ import processing.video.*;
 Capture video;
 
 color trackColor;
-float threshold = 40;
+//Threshhold for accepting what is considered the right color
+float threshold = 80;
 
 void setup() {
   size(640, 360);
@@ -11,7 +12,7 @@ void setup() {
   printArray(cameras);
   video = new Capture(this, cameras[0]);
   video.start();
-  trackColor = color(255,0,0);
+  trackRedColor = color(255,0,0);
   
   
 }
@@ -35,11 +36,11 @@ void draw() {
       // Track current color
       color currentColor = video.pixels[loc];
       float r1 = red(currentColor);
-      float r2 = red(trackColor);
+      float r2 = red(trackRedColor);
       float g1 = green(currentColor);
-      float g2 = green(trackColor);
+      float g2 = green(trackRedColor);
       float b1 = blue(currentColor);
-      float b2 = blue(trackColor);
+      float b2 = blue(trackRedColor);
       
       // Use euclidean distance to compare colors
       float d = dist(r1, g1, b1, r2, g2, b2);
