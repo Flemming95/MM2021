@@ -2,7 +2,11 @@ import processing.video.*;
 
 Capture video;
 
-color trackColor;
+//TODO Idee: Statt feste Farben zu verwenden, am Anfang des Programm-Ablaufs bzw im Menue den User
+//selbst eine feste oder variable Anzahl an Farben definieren lassen. Somit koennte man
+//das ganze besser auf User-Spezifische licht/kamera/farb-verhaeltnisse anpassen und generell
+//die usabiity deutlich verbessern. 
+color trackRedColor;
 //Threshhold for accepting what is considered the right color
 float threshold = 80;
 
