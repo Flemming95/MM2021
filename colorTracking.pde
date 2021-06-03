@@ -14,6 +14,7 @@ void setup() {
   size(640, 360);
   String[] cameras = Capture.list();
   printArray(cameras);
+  //TODO: Currently uses the first available camera. Maybe make this selectable in the menu, for people running multiple cameras? 
   video = new Capture(this, cameras[0]);
   video.start();
   trackRedColor = color(255,0,0);
