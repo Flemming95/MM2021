@@ -9,7 +9,7 @@ void setup() {
   smooth();
   frameRate(5); //5 pro sekunde
   background(0);
-  stroke(0.01);
+  strokeWeight(0.5);
   _centerX = width/2;
   _centerY = height/2;
 }
