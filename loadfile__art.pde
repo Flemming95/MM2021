@@ -132,6 +132,7 @@ void setup(){
     if(loadFileButton.CheckClick()){
         //Filter WAV and MP3 file
         filechooser.setFileFilter(extensionfilter);
+        filechooser.setAcceptAllFileFilterUsed(false);
         returnVal= filechooser.showOpenDialog(filechooser);
         if(returnVal==JFileChooser.APPROVE_OPTION){
           selection = filechooser.getSelectedFile();
