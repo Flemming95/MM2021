@@ -132,13 +132,13 @@ void setup(){
     if(loadFileButton.CheckClick()){
         //Filter WAV and MP3 file
         filechooser.setFileFilter(extensionfilter);
-        returnVal= filechooser.showOpenDialog(null);
+        returnVal= filechooser.showOpenDialog(filechooser);
         if(returnVal==JFileChooser.APPROVE_OPTION){
           selection = filechooser.getSelectedFile();
           //loads audioFile selection in the player
-          player.pause();
+          player.pause(); //previous file stops playing
           player = minim.loadFile(selection.getPath(),2048);
-          player.play(); //plays the file
+          player.play(); //plays the selected file
           isPlaying=true;
         }
      }
