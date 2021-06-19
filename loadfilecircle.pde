@@ -273,7 +273,6 @@ void setup(){
   
   void circleArt(){
   smooth();
-  frameRate(5); //5 pro sekunde
   noStroke();
   background(255);
   //strokeWeight(0.5);
