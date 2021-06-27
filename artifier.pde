@@ -137,8 +137,7 @@ void setup(){
      .setRange(minVol, maxVol) 
      .setValue(20)
      .setNumberOfTickMarks(10)
-     .setSliderMode(Slider.FLEXIBLE);
-   player.setGain(20);  
+     .setSliderMode(Slider.FLEXIBLE); 
   
   filechooser= new JFileChooser();
   extensionfilter=new FileNameExtensionFilter(".mp3 or .wav", "mp3", "wav");
@@ -147,6 +146,7 @@ void setup(){
   sun=true;
   flower=false;
   pcircle=false;
+  rcircle=false;
   
   // create an FFT object that has a time-domain buffer 
   // the same size as players sample buffer
@@ -212,7 +212,7 @@ void setup(){
        
       saveButton.drawButton();  
    }
-        //stop recording if(!player.isPlaying())  
+      //stop recording if(!player.isPlaying())  
 }
   
   void captureEvent(Capture video) {
@@ -283,7 +283,6 @@ void setup(){
     stroke(0);
     ellipse(avgX, avgY, 16, 16);
   }   
-
  }
   
 
@@ -346,7 +345,6 @@ void setup(){
        flower=false;
        pcircle=false;
      }
-     
      if(saveButton.CheckClick()){
      //open file dialog to save 
      //save as , save as random file
@@ -370,7 +368,6 @@ void setup(){
 }
     //To update the current mouse position. Can use this for UI clicks I guess
   void update(int x, int y){
-
   }
   
   //Not used at the moment. 
