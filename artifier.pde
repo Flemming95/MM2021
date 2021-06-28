@@ -542,6 +542,7 @@ void setup(){
         x = centerXRect  + (radius * cos(rad));
         y = bottomYRect + (radius * sin(rad));
         
+        strokeWeight(1);
         stroke(color(255));
         line(centerXRect, bottomYRect , x, y);
        }
