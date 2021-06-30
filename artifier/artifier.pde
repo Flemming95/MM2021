@@ -6,6 +6,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import controlP5.*;
 import com.hamoid.*;
 
+VideoExport videoExport;
+
 //main menue
 int xspacing = 20;   // How far apart should each horizontal location be spaced
 int w;              // Width of entire wave
@@ -227,6 +229,7 @@ void setup() {
   
   videoExport = new VideoExport(this);
   //videoExport.setFrameRate(30);
+  videoExport.setMovieFileName("Video"+videoNumber+".mp4");
   videoExport.startMovie();
 }
 
@@ -488,9 +491,9 @@ void mouseClicked() {
     city=false;
     pcircle=false;
   } else if (saveButton.CheckClick()) {
-    videoExport.setMovieFileName("Video"+videoNumber+".mp4");
     videoExport.endMovie();
     videoNumber++;
+    videoExport.setMovieFileName("Video"+videoNumber+".mp4");
     videoExport.startMovie();
   } else if (backgrButton.CheckClick()) {
     backgr=true;
