@@ -7,7 +7,7 @@ import controlP5.*;
 import com.hamoid.*;
 
 //main menue
-int xspacing = 10;   // How far apart should each horizontal location be spaced
+int xspacing = 20;   // How far apart should each horizontal location be spaced
 int w;              // Width of entire wave
 float theta = 0.0;  // Start angle at 0
 float amplitude = 75.0;  // Height of wave
@@ -17,8 +17,15 @@ float[] yvalues;  // Using an array to store height values for the wave
 Button startButton;
 Button quitButton;
 boolean starting=false;
+boolean recording;
 Textlabel appname;
 
+//tutorial
+boolean tutorial=false;
+int savedTime; //
+int totalTime = 20000; // 200000 ms = 20 seconds
+PImage tuto1; 
+PImage tuto2;
 
 //colortracking
 Capture video;
@@ -52,6 +59,8 @@ int previewRectSize = 15; //25
 //To count what color to select next
 int colorCounter = 1;
 
+int videoNumber = 1;
+
 color currentColor;
 
 //Booleans to track if colors have been chosen
@@ -67,17 +76,18 @@ color presentColor;
 Minim minim;
 AudioPlayer player;
 Button loadFileButton;
+Button tutorialButton;
 //Button pauseButton;
 //Button playButton;
 Button exitButton;
 Button saveButton;
-Button flowerButton;
+Button cityButton;
 Button sunButton;
 Button pcircleButton;
 Button rcircleButton;
 Button backgrButton;
 boolean sun;
-boolean flower;
+boolean city;
 boolean pcircle; 
 boolean rcircle;
 boolean buttonSetup;
@@ -87,8 +97,8 @@ Slider vol;
 int sliderTicks; //slider background color
 ControlP5 cp5; 
 Textlabel songname;
-int gap; //gap between window edge to visualisation field
-int gapCam; // gap between window edge and cam image
+int gap=10; //gap between window edge to visualisation field
+int gapCam=30; // gap between window edge and cam image
 
 int returnVal; //return value of the Filechooser
 JFileChooser filechooser;
@@ -109,10 +119,9 @@ float noisyRadius;
 float rad;
 float noiseArgument;
 
-
 //recording visuals
-VideoExport videoExport;
-boolean recording = false;
+
+
 PGraphics pg;
 
 void setup() {
@@ -144,8 +153,6 @@ void setup() {
   centerX = width/2; //coordinateX for center of the window 
   centerY = height/2; //coordinateY for center of the window 
 
-
-
   minim = new Minim(this);
   //https://github.com/anars/blank-audio/blob/master/1-minute-of-silence.mp3
   //initialising audioplayer
@@ -160,15 +167,16 @@ void setup() {
   startButton= new Button(centerX-300, centerY+200, buttonlength, buttonheight, "Start");
   quitButton=  new Button(centerX-300, centerY+250, buttonlength, buttonheight, "Quit");
   loadFileButton = new Button(75, 100, buttonlength + 90, buttonheight, "Choose an audiofile.");
+  tutorialButton = new Button(gapCam, bottomButtonY, buttonlength, buttonheight, "Tutorial");   
   //pauseButton = new Button(170.0,150.0, buttonlength, buttonheight, "Pause");
   //playButton = new Button(90.0,150.0, buttonlength, buttonheight, "Play");
-  sunButton = new Button(centerX, bottomButtonY, buttonlength, buttonheight, "Sun Art");
-  flowerButton = new Button(centerX + 70, bottomButtonY, buttonlength + 10, buttonheight, "Flower Art");
-  pcircleButton = new Button(centerX + 150, bottomButtonY, buttonlength * 2, buttonheight, "Pulsing Circle Art");
-  rcircleButton = new Button(centerX + 280, bottomButtonY, buttonlength * 2, buttonheight, "Rotating Circle Art");
+  sunButton = new Button(centerX, bottomButtonY, buttonlength, buttonheight, "[S]un Art");
+  cityButton = new Button(centerX + 70, bottomButtonY, buttonlength + 10, buttonheight, "[C]ity Art");
+  pcircleButton = new Button(centerX + 150, bottomButtonY, buttonlength * 2, buttonheight, "[P]ulsing Circle Art");
+  rcircleButton = new Button(centerX + 280, bottomButtonY, buttonlength * 2, buttonheight, "[R]otating Circle Art");
   saveButton = new Button(width - 140, bottomButtonY, buttonlength, buttonheight, "Save");  
-  exitButton = new Button(width - 70, bottomButtonY, buttonlength, buttonheight, "Exit");
-  backgrButton = new Button( centerX - 150, bottomButtonY, buttonlength*2, buttonheight, "Background");
+  exitButton = new Button(width - 70, bottomButtonY, buttonlength, buttonheight, "Exit[X]");
+  backgrButton = new Button( centerX - 150, bottomButtonY, buttonlength*2, buttonheight, "[B]ackground");
 
   cp5 = new ControlP5(this);
   //slider
@@ -190,7 +198,7 @@ void setup() {
 
   buttonSetup = false;
   sun=true;
-  flower=false;
+  city=false;
   pcircle=false;
   rcircle=false;
   backgr=false;
@@ -202,27 +210,28 @@ void setup() {
   fft = new FFT( player.bufferSize(), player.sampleRate() );
 
   frameRate(30);
-  gap = 10;
   centerXRect = width * 2/3 - gap; //center X- coordinate of visualisation rect
   bottomYRect = height - 90; // bottom Y-coord of visualisation rect
   centerYRect =  (height - 100 +  gap) / 2 ; //center Y-coord of visualisation rect
 
-  pg = createGraphics(width*2/3, height-110);
-
-  videoExport = new VideoExport(this);
-  videoExport.startMovie();
 
   appname=cp5.addTextlabel("appname") //adds label "Artifier" to main menue
     .setText("Artifier")
     .setPosition(centerX+100, 0)
     .setColorValue(0xffffffff)
     .setFont(createFont("Times New Roman", 90));
+
+  tuto1= loadImage("tutorial01.png");
+  tuto2= loadImage("tutorial02.png");
+  savedTime=millis();
+  
+  videoExport = new VideoExport(this);
+  //videoExport.setFrameRate(30);
+  videoExport.startMovie();
 }
 
 
 void draw() {
-
-
 
   //if start is clicked, show ...
   if (starting) {
@@ -230,9 +239,10 @@ void draw() {
     if (!buttonSetup) {
       background(0);
       loadFileButton.drawButton();
+      tutorialButton.drawButton();
       exitButton.drawButton();
       sunButton.drawButton();
-      flowerButton.drawButton(); 
+      cityButton.drawButton(); 
       pcircleButton.drawButton();
       rcircleButton.drawButton();
       backgrButton.drawButton();
@@ -247,10 +257,6 @@ void draw() {
     appname.setPosition(60, 20);
     appname.setFont(createFont("Times New Roman", 60));
     vol.show(); //shows slider 
-    //Visualisation field
-    //field width: 2/3 of window width, height: height - 110
-    rect(width/3 - gap, gap, width - width/3 - gap, height - 100 );
-
 
     //slider
     fill(sliderTicks);
@@ -258,20 +264,23 @@ void draw() {
     sliderVol();
 
     showWebcam();
+    if (tutorial) {
+      playTutorial();
+    }
 
     fft.forward(player.mix);
 
     if (player.isPlaying()) {
-      //rect(width/3 - gap , gap, width - width/3 - gap, height - 100 );
+      videoExport.setAudioFileName(selection.getName());
+      
+      
+
       clip(width/3 - gap, gap, width - width/3 -gap, height - 100);
-      videoExport.setAudioFileName(selection.getPath());
-      //videoExport.saveFrame();
-      //start recording 
 
       if (sun) {
         sunArt();
-      } else if (flower) {
-        flowerArt();
+      } else if (city) {
+        cityArt();
       } else if (pcircle) {
         pulsingCircleArt();
       } else if (rcircle) {
@@ -282,12 +291,13 @@ void draw() {
       //slider rectangle background  
       rect(55, 190, 200, 20);
       showWebcam();
+      recording=true;
 
       saveButton.drawButton();
     }
-    if (!player.isPlaying())
-      videoExport.endMovie();
-    //stop recording
+    if (!player.isPlaying()){
+      recording=false;
+    }
   } else {
     background(0);
     vol.hide(); //hide slider
@@ -295,6 +305,8 @@ void draw() {
     startButton.drawButton(); 
     quitButton.drawButton();
   }
+  
+  videoExport.saveFrame();  
 }
 
 void captureEvent(Capture video) {
@@ -303,7 +315,6 @@ void captureEvent(Capture video) {
 
 void showWebcam() {
   video.loadPixels();
-  gapCam = 30;
   int cameraBottomGap = 75;
   //shows image of (webcam, x-coordinate, y-coordinate, width , height of the image)  
   image(video, gapCam, centerY, centerX/2, centerY - cameraBottomGap);
@@ -398,9 +409,29 @@ void showWebcam() {
    */
 }
 
+void keyPressed() {
+  if (key == 'S' || key== 's') {
+    //sun
+  } else if (key == 'P' ||  key== 'p') {
+    //pulsing circle
+  } else if (key == 'R' || key=='r') {
+    //rotating circle
+  } else if (key =='X' || key == 'x') {
+    //exit
+  } else if (key =='B' || key == 'b') {
+    //background
+  } else if (key =='C' || key == 'c') {
+    //city
+  } else if(key=='q');{
+    
+  }
+}
+
 void mouseClicked() {
   if (startButton.CheckClick()) {
     starting=true;
+  } else if (tutorialButton.CheckClick()) {
+    tutorial=true;
   } else if (loadFileButton.CheckClick()) {
     //Filter WAV and MP3 file
     filechooser.setFileFilter(extensionfilter);
@@ -415,10 +446,10 @@ void mouseClicked() {
       background(0);
       buttonSetup = false;
       songname = cp5.addTextlabel("songname")
-        .setText("Playing: " + selection.getName())
+        .setText("Playing:"+System.lineSeparator()+ selection.getName())
         .setPosition(60, 150)
         .setColorValue(0xffffffff)
-        .setFont(createFont("Arial", 11))
+        .setFont(createFont("Arial", 12))
         ;
       player.isPlaying();
     }
@@ -436,29 +467,31 @@ void mouseClicked() {
   else if (exitButton.CheckClick() || quitButton.CheckClick()) {
     player.close();
     exit();
-  } else if (flowerButton.CheckClick()) {
+  } else if (cityButton.CheckClick()) {
     rcircle=false;
     pcircle= false;
     sun=false;
-    flower=true;
+    city=true;
   } else if (sunButton.CheckClick()) {
     rcircle=false;
     pcircle= false;
-    flower=false;
+    city=false;
     sun=true;
   } else if (pcircleButton.CheckClick()) {
     rcircle=false;
     sun=false;
-    flower=false;
+    city=false;
     pcircle=true;
   } else if (rcircleButton.CheckClick()) {
     rcircle=true;
     sun=false;
-    flower=false;
+    city=false;
     pcircle=false;
   } else if (saveButton.CheckClick()) {
-    //open file dialog to save 
-    //save as , save as random file
+    videoExport.setMovieFileName("Video"+videoNumber+".mp4");
+    videoExport.endMovie();
+    videoNumber++;
+    videoExport.startMovie();
   } else if (backgrButton.CheckClick()) {
     backgr=true;
   }
@@ -559,31 +592,58 @@ void mainArt() {
   }
 }
 
-void flowerArt(){
-  theta += 0.02;
-  // For every x value, calculate a y value with sine function
-  int minSize = 55;
-  float x = theta;
-  for (int i=0; i<fft.specSize(); i+=4) {     
-    stroke(currentColor); //colorinput here
-    strokeWeight(2);
-    yvalues[i] = sin(x)*amplitude;
-    x+=dx;
-  }
+void playTutorial() {
+  int passedTime = millis() - savedTime;
+  tuto1.resize(width - width/3 - gap, height - 110);
+  tuto2.resize(width - width/3 - gap, height - 110);
+  image(tuto1, width/3-gap, gap);
 
-  noStroke();
-  // A simple way to draw the wave with an ellipse at each location
-  for (int xval = 0; xval < yvalues.length; xval++) {
-    ellipse(xval*xspacing, height/2+yvalues[xval], 16, 16);
+  if (passedTime >= totalTime) { // after 20s, show tutorial02.png
+    image(tuto2, width/3-gap, gap);
   }
 }
+/*void flowerArt() {
+ theta += 0.02;
+ // For every x value, calculate a y value with sine function
+ int minSize = 55;
+ float x = theta;
+ for (int i=0; i<fft.specSize(); i+=4) {     
+ stroke(currentColor); //colorinput here
+ strokeWeight(2);
+ yvalues[i] = sin(x)*amplitude;
+ x+=dx;
+ }
+ 
+ noStroke();
+ // A simple way to draw the wave with an ellipse at each location
+ for (int xval = 0; xval < yvalues.length; xval++) {
+ ellipse(xval*xspacing, height/2+yvalues[xval], 16, 16);
+ }
+ }
+ 
+ 
+ float customNoise(float value) { 
+ float retValue = pow(sin(value), 3); 
+ return retValue;
+ }
+ */
+void cityArt() {
+  fill(fillBackground);
+  rect(width/3 - gap, gap, width-width/3-gap, height - 100);
+  pushMatrix();
+  stroke(255);
+  translate(width/3 - gap, 0);
+  for (int i=0; i<fft.specSize(); i++) {
+    float widthI = map(i, 0, fft.specSize(), 0, 200);  
+    float s = abs(fft.getBand(i));
+    fill(currentColor);
+    rect(widthI*10, gap, 10, bottomYRect -gap -s*7);
 
-
-float customNoise(float value) { 
-  float retValue = pow(sin(value), 3); 
-  return retValue;
+    fill(fillBackground);
+    ellipse(width/2, centerYRect - 150, 20*s/10, 20*s/10);
+  }
+  popMatrix();
 }
-
 
 //draws a sun with beams, reacts to frequency
 void sunArt() {
@@ -626,7 +686,6 @@ void pulsingCircleArt() {
   for (int i = 0; i < fft.specSize(); i +=2 ) {
     radius = fft.getBand(i)*1.5; //an dieser Stelle Frequenzen HÖR AUF EINSPEISEN ZU SCHREIBE MAN EY FUCK
 
-    
     fill(makeColorChangeAlpha(currentColor, 0.1), 15);
     ellipse(centerXRect, centerYRect, radius*1.3, radius*1.3);
 
@@ -634,7 +693,8 @@ void pulsingCircleArt() {
     fill(makeColorInvert(makeColorChangeAlpha(currentColor, 0.15)), 15);
     ellipse(centerXRect, centerYRect, radius/1.7, radius/1.7);
 
-    fill(makeColorChangeAlpha(currentColor, 0.85), 35);;
+    fill(makeColorChangeAlpha(currentColor, 0.85), 35);
+    ;
     ellipse(centerXRect, centerYRect, radius/3, radius/3);
 
     //smallest
@@ -755,7 +815,8 @@ class Button {
   }
 
   public void drawButton() {
-    stroke(0, 0, 0);
+    stroke(0);
+    strokeWeight(0.1);
     fill(220);
     rect(_x, _y, _width, _height);
     fill(0);
