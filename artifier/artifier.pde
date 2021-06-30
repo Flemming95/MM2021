@@ -4,9 +4,7 @@ import ddf.minim.analysis.*;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import controlP5.*;
-import com.hamoid.*;
 
-VideoExport videoExport;
 
 //main menue
 int xspacing = 20;   // How far apart should each horizontal location be spaced
@@ -32,17 +30,7 @@ PImage tuto2;
 //colortracking
 Capture video;
 
-//TODO Idee: Statt feste Farben zu verwenden, am Anfang des Programm-Ablaufs bzw im Menue den User
-//selbst eine feste oder variable Anzahl an Farben definieren lassen. Somit koennte man
-//das ganze besser auf User-Spezifische licht/kamera/farb-verhaeltnisse anpassen und generell
-//die usabiity deutlich verbessern. 
-color trackRedColor;
-color trackFirstColor, trackSecondColor, trackThirdColor;
 color fillBackground;
-//To make variations based on the color values
-float trackR1, trackR2, trackR3, trackG1, trackG2, trackG3, trackB1, trackB2, trackB3;
-//Threshhold for accepting what is considered the right color
-float threshold = 80;
 
 //The rectangle in the center, for defining colors
 int centerRectangleX, centerRectangleY;
@@ -54,25 +42,9 @@ int middle;
 int centerX;
 int centerY;
 
-//To place rectangles with the available colors
-int color1PreviewX, color2PreviewX, color3PreviewX;
-int colorPreviewY;
-int previewRectSize = 15; //25
-//To count what color to select next
-int colorCounter = 1;
-
 int videoNumber = 1;
 
 color currentColor;
-
-//Booleans to track if colors have been chosen
-boolean colorChosen1 = false;
-boolean colorChosen2 = false;
-boolean colorChosen3 = false;
-
-//Boolean to track if the color is currently present as well as that accepted color
-boolean colorPresent = false;
-color presentColor;
 
 //audioplayer
 Minim minim;
@@ -121,8 +93,6 @@ float noisyRadius;
 float rad;
 float noiseArgument;
 
-//recording visuals
-
 
 PGraphics pg;
 
@@ -137,20 +107,11 @@ void setup() {
   //colorTracking
   String[] cameras = Capture.list();
   printArray(cameras);
-  //TODO: Currently uses the first available camera. Maybe make this selectable in the menu, for people running multiple cameras? 
   video = new Capture(this, cameras[0]);
   video.start();
-  //redColor is old, I'll leave it in for now
-  trackRedColor = color(255, 0, 0);
   //Middle Pixel of the camera screen
   middle = (video.width/2) + (video.height/2) * video.width;
   //Center of the video frame
-
-  //Coordinates for the color displaying rectangles
-  color3PreviewX = width-40; 
-  color2PreviewX = color3PreviewX-40; 
-  color1PreviewX = color2PreviewX-40; 
-  colorPreviewY = 25; 
 
   centerX = width/2; //coordinateX for center of the window 
   centerY = height/2; //coordinateY for center of the window 
@@ -159,8 +120,6 @@ void setup() {
   //https://github.com/anars/blank-audio/blob/master/1-minute-of-silence.mp3
   //initialising audioplayer
   player = minim.loadFile("silent.mp3", 2048);
-
-
 
   //Buttons
   float buttonheight=20;
@@ -216,7 +175,6 @@ void setup() {
   bottomYRect = height - 90; // bottom Y-coord of visualisation rect
   centerYRect =  (height - 100 +  gap) / 2 ; //center Y-coord of visualisation rect
 
-
   appname=cp5.addTextlabel("appname") //adds label "Artifier" to main menue
     .setText("Artifier")
     .setPosition(centerX+100, 0)
@@ -227,10 +185,6 @@ void setup() {
   tuto2= loadImage("tutorial02.png");
   savedTime=millis();
   
-  videoExport = new VideoExport(this);
-  //videoExport.setFrameRate(30);
-  videoExport.setMovieFileName("Video"+videoNumber+".mp4");
-  videoExport.startMovie();
 }
 
 
@@ -274,10 +228,7 @@ void draw() {
     fft.forward(player.mix);
 
     if (player.isPlaying()) {
-      videoExport.setAudioFileName(selection.getName());
-      
-      
-
+   
       clip(width/3 - gap, gap, width - width/3 -gap, height - 100);
 
       if (sun) {
@@ -298,18 +249,13 @@ void draw() {
 
       saveButton.drawButton();
     }
-    if (!player.isPlaying()){
-      recording=false;
-    }
   } else {
     background(0);
     vol.hide(); //hide slider
     mainArt(); 
     startButton.drawButton(); 
     quitButton.drawButton();
-  }
-  
-  videoExport.saveFrame();  
+  } 
 }
 
 void captureEvent(Capture video) {
@@ -324,15 +270,11 @@ void showWebcam() {
   //Updates current mouse position to use it for clicks
   //update(mouseX, mouseY);
 
-  //Rectangle to mark the center. Need to make this transparent and preferably have it declared somewhere else or under a condition 
+  //Rectangle to mark the center.
   strokeWeight(1.0);
   stroke(0);
   fill(0, 0, 0, 0);
   rect(centerX/4 - centerRectSize/2 + gapCam, centerY + centerY/2 - centerRectSize/2 - cameraBottomGap/2, centerRectSize, centerRectSize);
-  //tint(255,5);
-
-
-
 
 
   /* NOT IMPLEMENTED: This could be used to track the currently shown color
@@ -414,7 +356,7 @@ void showWebcam() {
 
 void keyPressed() {
   if (key == 'S' || key== 's') {
-    //sun
+    
   } else if (key == 'P' ||  key== 'p') {
     //pulsing circle
   } else if (key == 'R' || key=='r') {
@@ -490,15 +432,10 @@ void mouseClicked() {
     sun=false;
     city=false;
     pcircle=false;
-  } else if (saveButton.CheckClick()) {
-    videoExport.endMovie();
-    videoNumber++;
-    videoExport.setMovieFileName("Video"+videoNumber+".mp4");
-    videoExport.startMovie();
   } else if (backgrButton.CheckClick()) {
     backgr=true;
   }
-  /*
+  /* OLD - this could be used to track and save colors
     if (colorCounter > 3){ colorCounter = 1; }
    if (colorCounter==1){
    trackFirstColor = video.pixels[middle];
@@ -515,12 +452,13 @@ void mouseClicked() {
    trackThirdColor = video.pixels[middle];
    colorCounter = 1;
    colorChosen3=true;
-   */
   else {
     trackNewColor();
   }
+  */
 }
 
+/* OLD - this could be used to track colors
 void trackNewColor() {
   if (colorCounter > 3) { 
     colorCounter = 1;
@@ -548,6 +486,7 @@ void trackNewColor() {
     colorChosen3=true;
   }
 }
+*/
 
 
 //Not used at the moment. 
@@ -605,31 +544,7 @@ void playTutorial() {
     image(tuto2, width/3-gap, gap);
   }
 }
-/*void flowerArt() {
- theta += 0.02;
- // For every x value, calculate a y value with sine function
- int minSize = 55;
- float x = theta;
- for (int i=0; i<fft.specSize(); i+=4) {     
- stroke(currentColor); //colorinput here
- strokeWeight(2);
- yvalues[i] = sin(x)*amplitude;
- x+=dx;
- }
- 
- noStroke();
- // A simple way to draw the wave with an ellipse at each location
- for (int xval = 0; xval < yvalues.length; xval++) {
- ellipse(xval*xspacing, height/2+yvalues[xval], 16, 16);
- }
- }
- 
- 
- float customNoise(float value) { 
- float retValue = pow(sin(value), 3); 
- return retValue;
- }
- */
+
 void cityArt() {
   fill(fillBackground);
   rect(width/3 - gap, gap, width-width/3-gap, height - 100);
@@ -741,6 +656,9 @@ void rotatingCircleArt() {
   popMatrix();
 }
 
+/**
+* Returns a very saturated base color, based on the given colors biggest color value
+*/
 color makeColorVariationSaturated(color c) {
   float redValue = red(c);
   float greenValue = green(c);
@@ -757,30 +675,43 @@ color makeColorVariationSaturated(color c) {
   return saturatedColor;
 }
 
+/**
+* Inverts a given color
+*/
 color makeColorInvert(color c) {
   return c/2;
 }
 
+/**
+* Returns a very transparent version of the color
+*/
 color makeColorVariationMild(color c) {
   color mildColor = color(red(c), green(c), blue(c), 30);
   return mildColor;
 }
 
+/**
+* Reduces the brightness of a color by multiplying with an alpha of 0.75
+*/
 color makeColorVariationDarker(color c) {
   float alpha = 0.75;
   float redValue = red(c)*alpha;
   float greenValue = green(c)*alpha;
   float blueValue = blue(c)*alpha;
   color darkColor = color(redValue, greenValue, blueValue, 195);
-
-
   return darkColor;
 }
 
+/**
+* Returns the color with transparency set to half (120)
+*/
 color makeColorVariationHalfTransparent(color c) {
   return color(red(c), green(c), blue(c), 120);
 }
 
+/**
+* Keeps the colors main-color while slightly reducing the color values of the others 
+*/
 color makeColorRandomAroundMain(color c) {
   float redValue = red(c);
   float greenValue = green(c);
@@ -797,6 +728,9 @@ color makeColorRandomAroundMain(color c) {
   return mainColor;
 }
 
+/**
+* Makes a color mor or less bright by a given alpha. Done through color multiplication
+*/
 color makeColorChangeAlpha(color c, float alpha) {
   color newColor = color(red(c)*alpha, green(c)*alpha, blue(c)*alpha);
   return newColor;
